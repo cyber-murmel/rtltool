@@ -137,7 +137,9 @@ class RTL8762C:
     def read_flash(self, address, size):
         chunks = [
             self._exec(
-                operations.read_flash(address + i, min(self.FLASH_SECTOR_SIZE, size - i))
+                operations.read_flash(
+                    address + i, min(self.FLASH_SECTOR_SIZE, size - i)
+                )
             )
             for i in range(0, size, self.FLASH_SECTOR_SIZE)
         ]
@@ -153,7 +155,9 @@ class RTL8762C:
         else:
             for i in range(0, self._flash_size, self.FLASH_SECTOR_SIZE):
                 self._exec(
-                    operations.erase_region(self._FLASH_START + i, self.FLASH_SECTOR_SIZE)
+                    operations.erase_region(
+                        self._FLASH_START + i, self.FLASH_SECTOR_SIZE
+                    )
                 )
 
     def write_flash(self, address, data):
