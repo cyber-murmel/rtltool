@@ -1,7 +1,7 @@
 # rtltool.py
 Tool for programming the Realtek RTL8762C SoC
 
-[![hackaday.io](https://img.shields.io/badge/hackaday-io-gold.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+[![hackaday.io](https://img.shields.io/badge/hackaday-io-gold.svg)](https://hackaday.io/project/182205-py-ft10)
 
 ## Usage
 ```
