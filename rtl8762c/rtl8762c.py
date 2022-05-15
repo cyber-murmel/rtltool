@@ -1,5 +1,4 @@
 from logging import debug, info, warning, error
-from logging import DEBUG, INFO, WARNING, ERROR
 from enum import Enum
 from time import sleep
 from struct import pack, unpack
@@ -19,6 +18,9 @@ class RTL8762C:
     _TOOL_PATH = "tools/RTL_Tools/Bee2MPTool_kits_v1.0.4.0.zip"
     _FW0_PATH = "Bee2MPTool_kits_v1.0.4.0/Bee2MPTool/Image/firmware0.bin"
     _FW0_CHUNK_SIZE = 252
+    _FLASH_START = 0x00801000
+    FLASH_SECTOR_SIZE = 0x1000  # 4 kiB
+    _FLASH_ADDR_MAC = 0x00801409
     _state = None
 
     class ModuleState(Enum):
@@ -114,7 +116,8 @@ class RTL8762C:
             #     info("## Performing Magic Sequence")
             #     self._unknown_sequence()
             report = self._exec(operations.system_report())
-            info(f"Flash Size: {report['flash_size']//1024} kiB")
+            self._flash_size = report["flash_size"]
+            info(f"Flash Size: {self._flash_size//1024} kiB")
 
         self._state = state
 
@@ -122,3 +125,45 @@ class RTL8762C:
 
     def set_baud(self, baud_rate):
         self._exec(operations.set_baud(baud_rate))
+        self._com.baudrate = baud_rate
+        # sleep(self._BAUD_CHANGE_DELAY)
+
+    def read_mac(self):
+        reverse_mac = self._exec(operations.read_flash(self._FLASH_ADDR_MAC, 6))
+        print(reverse_mac)
+        return reverse_mac[::-1]
+        print("foo")
+
+    def read_flash(self, address, size):
+        chunks = [
+            self._exec(
+                operations.read_flash(address + i, min(self.FLASH_SECTOR_SIZE, size - i))
+            )
+            for i in range(0, size, self.FLASH_SECTOR_SIZE)
+        ]
+        return b"".join(chunks)
+
+    def erase_region(self, address, size):
+        for i in range(0, size, self.FLASH_SECTOR_SIZE):
+            self._exec(operations.erase_region(address + i, self.FLASH_SECTOR_SIZE))
+
+    def erase_flash(self):
+        if self._flash_size <= 512 * 1024:
+            self._exec(operations.erase_flash())
+        else:
+            for i in range(0, self._flash_size, self.FLASH_SECTOR_SIZE):
+                self._exec(
+                    operations.erase_region(self._FLASH_START + i, self.FLASH_SECTOR_SIZE)
+                )
+
+    def write_flash(self, address, data):
+        for i in range(0, len(data), self.FLASH_SECTOR_SIZE):
+            chunk = data[i : min(i + self.FLASH_SECTOR_SIZE, len(data))]
+            self.erase_region(address + i, len(chunk))
+            self._exec(operations.write_flash(address + i, chunk))
+            self.verify_flash(address + i, chunk)
+
+    def verify_flash(self, address, data):
+        for i in range(0, len(data), self.FLASH_SECTOR_SIZE):
+            chunk = data[i : min(i + self.FLASH_SECTOR_SIZE, len(data))]
+            self._exec(operations.verify_flash(address + i, chunk))

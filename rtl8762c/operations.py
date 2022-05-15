@@ -14,16 +14,15 @@ class ExpectError(Exception):
 
 class Operation(ABC):
     @property
-    @abstractmethod
     def bytecode(self):
-        pass
+        return self._bytecode
+
+    @property
+    def response_len(self):
+        return len(self._response)
 
     @property
     @abstractmethod
-    def response_len(self):
-        pass
-
-    @property
     def process_response(self, response):
         pass
 
@@ -36,6 +35,22 @@ class Operation(ABC):
             raise ExpectError("Received bytes mismatch expected bytes")
 
 
+class CRC_Operation(Operation):
+    @property
+    def bytecode(self):
+        bytecode = self._bytecode
+        bytecode += pack("<H", CrcArc.calc(bytearray(self._bytecode)))
+        return bytecode
+
+    def _check_crc(self, response):
+        if 0 != CrcArc.calc(response):
+            raise CRCError("CRC error")
+
+    def process_response(self, response):
+        self._check_crc(response)
+        self._expect(self._response, response)
+
+
 class write_fw0(Operation):
     def __init__(self, chunk, frame_number):
         self._bytecode = b"\x01\x20\xFC"
@@ -44,22 +59,12 @@ class write_fw0(Operation):
         self._response = b"\x04\x0E\x05\x02\x20\xFC\x00"
         self._response += pack("B", frame_number)
 
-    @property
-    def bytecode(self):
-        return self._bytecode
-
-    @property
-    def response_len(self):
-        return len(self._response)
-
     def process_response(self, response):
         self._expect(self._response, response)
 
 
 class system_report(Operation):
-    @property
-    def bytecode(self):
-        return b"\x01\x62\xFC\x09\x20\x34\x12\x20\x00\x31\x38\x20\x00"
+    _bytecode = b"\x01\x62\xFC\x09\x20\x34\x12\x20\x00\x31\x38\x20\x00"
 
     @property
     def response_len(self):
@@ -79,21 +84,60 @@ class system_report(Operation):
         return report_dict
 
 
-class set_baud(Operation):
+class set_baud(CRC_Operation):
+    _response = b"\x87\x10\x10\x00\x00\x00\x00\x00\x5A\xD7"
+
     def __init__(self, baud_rate):
         self._bytecode = b"\x87\x10\x10"
         self._bytecode += pack("<I", baud_rate)
         self._bytecode += b"\xff"
-        self._bytecode += pack("<H", CrcArc.calc(bytearray(self._bytecode)))
-        self._response = b"\x87\x10\x10\x00\x00\x00\x00\x00\x5A\xD7"
 
-    @property
-    def bytecode(self):
-        return self._bytecode
+
+class read_flash(CRC_Operation):
+    def __init__(self, address, size):
+        self._bytecode = b"\x87\x33\x10"
+        self._bytecode += pack("<I", address)
+        self._bytecode += pack("<I", size)
+        self._size = size
 
     @property
     def response_len(self):
-        return len(self._response)
+        return self._size + 10
 
     def process_response(self, response):
-        self._expect(self._response, response)
+        self._check_crc(response)
+        return response[8:-2]
+
+
+class erase_region(CRC_Operation):
+    _response = b"\x87\x30\x10\x00\x00\x00\x00\x00\x7B\x15"
+
+    def __init__(self, address, size):
+        self._bytecode = b"\x87\x30\x10"
+        self._bytecode += pack("<I", address)
+        self._bytecode += pack("<I", size)
+
+
+class erase_flash(CRC_Operation):
+    _response = b"\x87\x31\x10\x00\x00\x00\x00\x00\x6B\xD5"
+    _bytecode = b"\x87\x31\x10"
+
+
+class write_flash(CRC_Operation):
+    _response = b"\x87\x32\x10\x00\x00\x00\x00\x00\x58\xD5"
+
+    def __init__(self, address, chunk):
+        self._bytecode = b"\x87\x32\x10"
+        self._bytecode += pack("<I", address)
+        self._bytecode += pack("<I", len(chunk))
+        self._bytecode += chunk
+
+
+class verify_flash(CRC_Operation):
+    _response = b"\x87\x50\x10\x00\x00\x00\x00\x00\x1B\x13"
+
+    def __init__(self, address, chunk):
+        self._bytecode = b"\x87\x50\x10"
+        self._bytecode += pack("<I", address)
+        self._bytecode += pack("<I", len(chunk))
+        self._bytecode += pack("<H", CrcArc.calc(chunk))

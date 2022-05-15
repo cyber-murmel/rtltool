@@ -32,7 +32,8 @@ class AddrFilenamePairAction(Action):
             except ValueError:
                 raise ArgumentError(self, 'Address "%s" must be a number' % values[i])
             try:
-                argfile = open(values[i + 1], "rb")
+                # argfile = open(values[i + 1], "rb")
+                argfile_name = values[i + 1]
             except IOError as e:
                 raise ArgumentError(self, e)
             except IndexError:
@@ -41,26 +42,28 @@ class AddrFilenamePairAction(Action):
                     "Must be pairs of an address "
                     "and the binary filename to write there",
                 )
-            pairs.append((address, argfile))
+            # pairs.append((address, argfile))
+            pairs.append((address, argfile_name))
 
-        # # Sort the addresses and check for overlapping
-        # end = 0
-        # for address, argfile in sorted(pairs, key=lambda x: x[0]):
-        #     argfile.seek(0, 2)  # seek to end
-        #     size = argfile.tell()
-        #     argfile.seek(0)
-        #     sector_start = address & ~(ESPLoader.FLASH_SECTOR_SIZE - 1)
-        #     sector_end = (
-        #         (address + size + ESPLoader.FLASH_SECTOR_SIZE - 1)
-        #         & ~(ESPLoader.FLASH_SECTOR_SIZE - 1)
-        #     ) - 1
-        #     if sector_start < end:
-        #         message = "Detected overlap at address: 0x%x for file: %s" % (
-        #             address,
-        #             argfile.name,
-        #         )
-        #         raise argparse.ArgumentError(self, message)
-        #     end = sector_end
+        # Sort the addresses and check for overlapping
+        end = 0
+        for address, argfile_name in sorted(pairs, key=lambda x: x[0]):
+            with open(argfile_name, 'rb') as argfile:
+                argfile.seek(0, 2)  # seek to end
+                size = argfile.tell()
+                argfile.seek(0)
+                sector_start = address & ~(RTL8762C.FLASH_SECTOR_SIZE - 1)
+                sector_end = (
+                    (address + size + RTL8762C.FLASH_SECTOR_SIZE - 1)
+                    & ~(RTL8762C.FLASH_SECTOR_SIZE - 1)
+                ) - 1
+                if sector_start < end:
+                    message = "Detected overlap at address: 0x%x for file: %s" % (
+                        address,
+                        argfile.name,
+                    )
+                    raise ArgumentError(self, message)
+                end = sector_end
         setattr(namespace, self.dest, pairs)
 
 
@@ -109,15 +112,40 @@ def parse_arguments():
         default=3,
     )
 
-    operations = parser.add_subparsers(
-        dest="operation", help="Run rtltool.py {command} -h for additional help"
+    tool_commands = parser.add_subparsers(
+        dest="command", help="Run rtltool.py {command} -h for additional help"
     )
 
-    operations.add_parser("read_mac", help="Read MAC address from OTP ROM")
+    tool_commands.add_parser("read_mac", help="Read MAC address from OTP ROM")
 
-    operations.add_parser("chip_id", help="Read Chip ID from OTP ROM")
+    tool_commands.add_parser("chip_id", help="Read Chip ID from OTP ROM")
 
-    parser_write_flash = operations.add_parser(
+    parser_read_flash = tool_commands.add_parser(
+        "read_flash", help="Read flash content"
+    )
+    parser_read_flash.add_argument("address", help="Start address", type=arg_auto_int)
+    parser_read_flash.add_argument(
+        "size", help="Size of region to dump", type=arg_auto_int
+    )
+    parser_read_flash.add_argument("filename", help="Name of binary dump")
+
+    tool_commands.add_parser("erase_flash", help="Perform Chip Erase on SPI flash")
+
+    parser_erase_region = tool_commands.add_parser(
+        "erase_region", help="Erase a region of the flash"
+    )
+    parser_erase_region.add_argument(
+        "address",
+        help=f"Start address (must be multiple of {RTL8762C.FLASH_SECTOR_SIZE})",
+        type=arg_auto_int,
+    )
+    parser_erase_region.add_argument(
+        "size",
+        help=f"Size of region to erase (must be multiple of {RTL8762C.FLASH_SECTOR_SIZE})",
+        type=arg_auto_int,
+    )
+
+    parser_write_flash = tool_commands.add_parser(
         "write_flash", help="Write a binary blob to flash"
     )
     parser_write_flash.add_argument(
@@ -127,16 +155,25 @@ def parse_arguments():
         action=AddrFilenamePairAction,
     )
 
+    parser_verify_flash = tool_commands.add_parser(
+        "verify_flash", help="Verify a binary blob against flash"
+    )
+    parser_verify_flash.add_argument(
+        "addr_filename",
+        help="Address and binary file to verify there, separated by space",
+        action=AddrFilenamePairAction,
+    )
+
     args = parser.parse_args()
 
     color_log(level=get_log_level(args.verbose, args.quiet))
 
-    # internal sanity check - every operation matches a module function of the same name
-    for operation in operations.choices.keys():
+    # internal sanity check - every command matches a module function of the same name
+    for command in tool_commands.choices.keys():
         try:
-            getattr(commands, operation)
+            getattr(commands, command)
         except AttributeError as e:
-            error(f"{operation} should be a function in {commands.__name__}")
+            error(f"{command} should be a function in {commands.__name__}")
             raise e
 
     return args
@@ -152,15 +189,17 @@ def main():
         info("No serial port specified. Trying available ports.")
         ports = [comport[0] for comport in list_comports()]
 
+    success = False
     for port in ports:
         info(f"Using port {port}")
-        success = False
         for attempt in range(args.retries):
             try:
                 with Serial(port) as com, RTL8762C(com) as rtl:
                     if args.baud and args.baud != RTL8762C.DEFAULT_BAUD:
                         rtl.set_baud(args.baud)
-                    pass
+                        if args.command:
+                            command = getattr(commands, args.command)
+                            command(rtl, args)
                 success = True
                 break
             except Exception as e:
@@ -172,6 +211,11 @@ def main():
             warning(f"{port} unsuccessful. Trying next port.")
     info("Finished")
 
+    if success:
+        return 0
+    else:
+        return -1
+
 
 if "__main__" == __name__:
-    main()
+    exit(main())
