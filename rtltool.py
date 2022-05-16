@@ -3,4 +3,4 @@
 from rtl8762c import main
 
 if "__main__" == __name__:
-    main()
+    exit(main())
