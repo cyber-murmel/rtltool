@@ -201,8 +201,12 @@ def main():
     if args.port:
         ports = [args.port]
     else:
-        info("No serial port specified. Trying available ports.")
+        warning("No serial port specified (--port). Trying available ports.")
         ports = [comport[0] for comport in list_comports()]
+
+    if not ports:
+        error("No ports available")
+        return 1
 
     success = False
     for port in ports:
@@ -229,7 +233,7 @@ def main():
     if success:
         return 0
     else:
-        return -1
+        return 1
 
 
 if "__main__" == __name__:
