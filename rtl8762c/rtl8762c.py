@@ -152,12 +152,7 @@ class RTL8762C:
         if self._flash_size <= 512 * 1024:
             self._exec(operations.erase_flash())
         else:
-            for i in range(0, self._flash_size, self.FLASH_SECTOR_SIZE):
-                self._exec(
-                    operations.erase_region(
-                        self._FLASH_START + i, self.FLASH_SECTOR_SIZE
-                    )
-                )
+            self.erase_region(self._FLASH_START, self._flash_size)
 
     def write_flash(self, address, data):
         for i in range(0, len(data), self.FLASH_SECTOR_SIZE):
