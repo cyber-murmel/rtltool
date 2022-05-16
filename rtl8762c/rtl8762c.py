@@ -18,7 +18,7 @@ class RTL8762C:
     _TOOL_PATH = "tools/RTL_Tools/Bee2MPTool_kits_v1.0.4.0.zip"
     _FW0_PATH = "Bee2MPTool_kits_v1.0.4.0/Bee2MPTool/Image/firmware0.bin"
     _FW0_CHUNK_SIZE = 252
-    _FLASH_START = 0x00801000
+    _FLASH_START = 0x00800000
     FLASH_SECTOR_SIZE = 0x1000  # 4 kiB
     _FLASH_ADDR_MAC = 0x00801409
     _state = None
