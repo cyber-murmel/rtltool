@@ -132,7 +132,6 @@ class RTL8762C:
         reverse_mac = self._exec(operations.read_flash(self._FLASH_ADDR_MAC, 6))
         print(reverse_mac)
         return reverse_mac[::-1]
-        print("foo")
 
     def read_flash(self, address, size):
         chunks = [
