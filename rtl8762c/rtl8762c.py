@@ -126,7 +126,7 @@ class RTL8762C:
     def set_baud(self, baud_rate):
         self._exec(operations.set_baud(baud_rate))
         self._com.baudrate = baud_rate
-        # sleep(self._BAUD_CHANGE_DELAY)
+        sleep(self._BAUD_CHANGE_DELAY)
 
     def read_mac(self):
         reverse_mac = self._exec(operations.read_flash(self._FLASH_ADDR_MAC, 6))

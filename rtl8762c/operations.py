@@ -105,6 +105,7 @@ class read_flash(CRC_Operation):
         return self._size + 10
 
     def process_response(self, response):
+        assert self.response_len == len(response), "Didn't read enough bytes!"
         self._check_crc(response)
         return response[8:-2]
 
