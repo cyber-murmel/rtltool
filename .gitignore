@@ -144,3 +144,9 @@ static
 
 # OSX
 .DS_Store
+
+# VS Code
+.vscode
+
+# binary files
+*.bin
