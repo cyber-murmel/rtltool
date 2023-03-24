@@ -107,6 +107,8 @@ class RTL8762C:
         self._com.dtr = False
         sleep(self._BAUD_CHANGE_DELAY)
 
+        self._com.reset_input_buffer()
+
         if self.ModuleState.FLASH == state:
             info("## Performing Handshake")
             # self._exec(self._COMMANDS.open)
