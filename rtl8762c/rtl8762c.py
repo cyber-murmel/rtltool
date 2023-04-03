@@ -107,6 +107,14 @@ class RTL8762C:
         self._com.dtr = False
         sleep(self._BAUD_CHANGE_DELAY)
 
+        # some USB-UART adapters idle when DTR is deasserted
+        # https://github.com/hathach/tinyusb/issues/1548
+        # https://github.com/raspberrypi/pico-sdk/issues/921
+        # https://github.com/raspberrypi/pico-sdk/pull/932
+        # https://github.com/raspberrypi/picoprobe/issues/32
+        # https://github.com/raspberrypi/picoprobe/pull/33
+        self._com.dtr = True
+
         self._com.reset_input_buffer()
 
         if self.ModuleState.FLASH == state:
