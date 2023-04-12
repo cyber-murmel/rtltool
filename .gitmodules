@@ -1,3 +1,0 @@
-[submodule "rtl8762c/SDK"]
-	path = rtl8762c/tools
-	url = https://github.com/ART-Badge/SDK.git

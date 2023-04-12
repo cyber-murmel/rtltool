@@ -15,8 +15,8 @@ class RTL8762C:
     _RESET_PULSE_WIDTH = 0.01
     _BOOT_MODE_SUSTAIN = 0.5
     _BAUD_CHANGE_DELAY = 0.4
-    _TOOL_PATH = "tools/RTL_Tools/Bee2MPTool_kits_v1.0.4.0.zip"
-    _FW0_PATH = "Bee2MPTool_kits_v1.0.4.0/Bee2MPTool/Image/firmware0.bin"
+    _TOOL_PATH = "BeeMPTool_kits_v1.0.5.8.zip"
+    _FW0_PATH = "BeeMPTool_kits_v1.0.5.8/BeeMPTool/Image/firmware0.bin"
     _FW0_CHUNK_SIZE = 252
     _FLASH_START = 0x00800000
     FLASH_SECTOR_SIZE = 0x1000  # 4 kiB

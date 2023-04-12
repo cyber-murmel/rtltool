@@ -68,7 +68,7 @@ class system_report(Operation):
 
     @property
     def response_len(self):
-        return 77
+        return 93
 
     def process_response(self, response):
         report = response[7:]

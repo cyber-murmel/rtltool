@@ -150,3 +150,6 @@ static
 
 # binary files
 *.bin
+
+# archives
+*.zip

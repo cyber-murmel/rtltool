@@ -4,10 +4,12 @@ Tool for programming the Realtek RTL8762C SoC
 [![hackaday.io](https://img.shields.io/badge/hackaday-io-gold.svg)](https://hackaday.io/project/182205-py-ft10)
 
 ## Installation
-To obtain this tool, clone this repository recursively.
+To obtain this tool, clone this repository.
 ```shell
-git clone --recurse-submodules git@github.com:cyber-murmel/rtltool.git
+git clone https://github.com/cyber-murmel/rtltool.git
 ```
+Download the *RTL8762x MP Tool Kits(ZIP)* from the [vendor page](https://www.realmcu.com/en/Home/Product/93cc0582-3a3f-4ea8-82ea-76c6504e478a) and place it in the [`rtl8762c` directory](rtl8762c/).
+This tool is compatible with *v1.0.5.8* of that zip.
 
 ### Python modules
 This tool depends on the python modules listed in the `pyproject.toml`.
@@ -21,7 +23,7 @@ poetry install
 To enter the environment again, just run `poetry shell` in the root of this repository.
 
 ### Nix
-Users of Nix or NixOS can simply run `nix-shell` to enter an environment with all necessary dependencies.
+Users of Nix or NixOS can simply run `nix-shell` to enter an environment with all necessary dependencies (except for vendor files).
 
 ## Usage
 To use this tool, activate the venv or enter the Nix shell as described in [Installation](#installation).
