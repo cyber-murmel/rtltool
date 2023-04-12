@@ -10,13 +10,15 @@ git clone --recurse-submodules git@github.com:cyber-murmel/rtltool.git
 ```
 
 ### Python modules
-This tool depends on the python modules listed in the requirements.txt. Run the following from the root of this repository.
+This tool depends on the python modules listed in the `pyproject.toml`.
+Run the following in the root of this repository to create a development environment
+and install the dependencies.
 ```shell
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip --requirement requirements.txt
-deactivate
+poetry shell
+poetry install
 ```
+
+To enter the environment again, just run `poetry shell` in the root of this repository.
 
 ### Nix
 Users of Nix or NixOS can simply run `nix-shell` to enter an environment with all necessary dependencies.

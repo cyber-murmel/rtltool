@@ -1,6 +1,6 @@
 {
-  # nixpkgs 21.11, deterministic. Last updated: 2022-01-01.
-  pkgs ? import (fetchTarball("https://github.com/NixOS/nixpkgs/archive/8a053bc.tar.gz")) {}
+  # nixpkgs 22.11, deterministic. Last updated: 2023-04-12.
+  pkgs ? import (fetchTarball("https://github.com/NixOS/nixpkgs/archive/115a96e2ac1e92937cd47c30e073e16dcaaf6247.tar.gz")) {}
 }:
 
 with pkgs;
