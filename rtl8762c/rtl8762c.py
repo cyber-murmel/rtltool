@@ -3,6 +3,7 @@ from enum import Enum
 from time import sleep
 from struct import pack, unpack
 from os.path import dirname, abspath, join as pathcat
+from glob import glob
 from zipfile import ZipFile
 from . import operations
 
@@ -15,8 +16,7 @@ class RTL8762C:
     _RESET_PULSE_WIDTH = 0.01
     _BOOT_MODE_SUSTAIN = 0.5
     _BAUD_CHANGE_DELAY = 0.4
-    _TOOL_PATH = "BeeMPTool_kits_v1.0.5.8.zip"
-    _FW0_PATH = "BeeMPTool_kits_v1.0.5.8/BeeMPTool/Image/firmware0.bin"
+    _TOOL_PATH_GLOB = "BeeMPTool_kits_v*.zip"
     _FW0_CHUNK_SIZE = 252
     _FLASH_START = 0x00800000
     FLASH_SECTOR_SIZE = 0x1000  # 4 kiB
@@ -63,9 +63,11 @@ class RTL8762C:
 
     def _write_fw0(self):
         debug("Starting Transmission of firmware0")
+        tool_path = glob(pathcat(_PKG_DIR, self._TOOL_PATH_GLOB))[0]
+        fw_0_path = f"{tool_path.split('/')[-1][:-4]}/BeeMPTool/Image/firmware0.bin"
         with ZipFile(
-            pathcat(_PKG_DIR, self._TOOL_PATH), "r"
-        ) as tool_archive, tool_archive.open(self._FW0_PATH, "r") as fw0:
+            tool_path, "r"
+        ) as tool_archive, tool_archive.open(fw_0_path, "r") as fw0:
             frame_number = 0
             while True:
                 chunk = fw0.read(self._FW0_CHUNK_SIZE)

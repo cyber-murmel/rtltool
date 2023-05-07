@@ -9,7 +9,9 @@ To obtain this tool, clone this repository.
 git clone https://github.com/cyber-murmel/rtltool.git
 ```
 Download the *RTL8762x MP Tool Kits(ZIP)* from the [vendor page](https://www.realmcu.com/en/Home/Product/93cc0582-3a3f-4ea8-82ea-76c6504e478a) and place it in the [`rtl8762c` directory](rtl8762c/).
-This tool is compatible with *v1.0.5.8* of that zip.
+This tool is compatible with the following versions of that zip:
+- v1.0.5.8
+- v1.0.6.2
 
 ### Python modules
 This tool depends on the python modules listed in the `pyproject.toml`.
