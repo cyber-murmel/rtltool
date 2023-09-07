@@ -63,18 +63,23 @@ class RTL8762C:
 
     def _write_fw0(self):
         debug("Starting Transmission of firmware0")
-        tool_path = glob(pathcat(_PKG_DIR, self._TOOL_PATH_GLOB))[0]
-        fw_0_path = f"{tool_path.split('/')[-1][:-4]}/BeeMPTool/Image/firmware0.bin"
-        with ZipFile(
-            tool_path, "r"
-        ) as tool_archive, tool_archive.open(fw_0_path, "r") as fw0:
-            frame_number = 0
-            while True:
-                chunk = fw0.read(self._FW0_CHUNK_SIZE)
-                if not chunk:
-                    break
-                self._exec(operations.write_fw0(chunk, frame_number))
-                frame_number += 1
+        tool_path_matches = glob(pathcat(_PKG_DIR, self._TOOL_PATH_GLOB))
+        if (len(tool_path_matches)):
+            tool_path = tool_path_matches[0]
+            fw_0_path = f"{tool_path.split('/')[-1][:-4]}/BeeMPTool/Image/firmware0.bin"
+            tool_archive = ZipFile(tool_path, "r")
+            fw0 = tool_archive.open(fw_0_path, "r")
+        else:
+            fw_0_path = _PKG_DIR + "/firmware0.bin"
+            fw0 = open(fw_0_path, "rb")
+        
+        frame_number = 0
+        while True:
+            chunk = fw0.read(self._FW0_CHUNK_SIZE)
+            if not chunk:
+                break
+            self._exec(operations.write_fw0(chunk, frame_number))
+            frame_number += 1
         debug("Transmission of firmware0 Finished")
 
     def _assert_state(self, state):
