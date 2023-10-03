@@ -3,6 +3,8 @@ Tool for programming the Realtek RTL8762C SoC via the UART interface
 
 [![hackaday.io](https://img.shields.io/badge/hackaday-io-gold.svg)](https://hackaday.io/project/182205-py-ft10)
 
+For log tracing please check out [rtlreadlog](https://github.com/wuwbobo2021/rtlreadlog).
+
 ## Installation
 To obtain this tool, clone this repository.
 ```shell
