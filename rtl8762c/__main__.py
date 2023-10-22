@@ -133,7 +133,7 @@ def parse_arguments():
 
     tool_commands.add_parser("read_mac", help="Read MAC address from OTP ROM")
 
-    tool_commands.add_parser("chip_id", help="Read Chip ID from OTP ROM")
+    tool_commands.add_parser("chip_id", help="Read Chip ID from OTP ROM (not implemented)")
 
     parser_read_flash = tool_commands.add_parser(
         "read_flash", help="Read flash content"

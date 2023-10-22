@@ -1,15 +1,18 @@
 # rtltool.py
-Tool for programming the Realtek RTL8762C SoC
+Tool for programming the Realtek RTL8762C SoC via the UART interface
 
 [![hackaday.io](https://img.shields.io/badge/hackaday-io-gold.svg)](https://hackaday.io/project/182205-py-ft10)
+
+For log tracing please check out [rtlreadlog](https://github.com/wuwbobo2021/rtlreadlog).
 
 ## Installation
 To obtain this tool, clone this repository.
 ```shell
 git clone https://github.com/cyber-murmel/rtltool.git
 ```
-Download the *RTL8762x MP Tool Kits(ZIP)* from the [vendor page](https://www.realmcu.com/en/Home/Product/93cc0582-3a3f-4ea8-82ea-76c6504e478a) and place it in the [`rtl8762c` directory](rtl8762c/).
-This tool is compatible with the following versions of that zip:
+The file `firmware0.bin` in [`rtl8762c` directory](rtl8762c/) is kept for the convenience of use and is not a part of this program; it was extracted from *RTL8762x MP Tool Kits(ZIP)* (v1.0.6.2), which can be downloaded from the [vendor page](https://www.realmcu.com/en/Home/Product/93cc0582-3a3f-4ea8-82ea-76c6504e478a). If the zip file is placed under that directory, this tool will read from the zip package instead.
+
+This tool is compatible with the following versions of that zip (and newer versions, as long as `firmware0.bin` is placed under `BeeMPTool_kits_v*/BeeMPTool/Image` in the zip package):
 - v1.0.5.8
 - v1.0.6.2
 
@@ -40,7 +43,7 @@ positional arguments:
   {read_mac,chip_id,read_flash,erase_flash,erase_region,write_flash,verify_flash}
                         Run rtltool.py {command} -h for additional help
     read_mac            Read MAC address from OTP ROM
-    chip_id             Read Chip ID from OTP ROM
+    chip_id             Read Chip ID from OTP ROM (not implemented)
     read_flash          Read flash content
     erase_flash         Perform Chip Erase on SPI flash
     erase_region        Erase a region of the flash
